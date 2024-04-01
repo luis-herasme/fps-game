@@ -1,13 +1,16 @@
 // Entities
 export type Entity = number;
+export type EntityDefinition<Components> = Partial<Components>;
 
 // Systems
 export interface System<T> {
-  readonly requiredComponents: (keyof T)[];
+  readonly requiredComponents: RC<T>;
   update?(entities: Set<Entity>, ecs: ECS<T>): void;
   onEntityAdded?(entity: Entity, ecs: ECS<T>): void;
   onEntityRemoved?(entity: Entity, ecs: ECS<T>): void;
 }
+
+export type RC<T> = (keyof T)[];
 
 // ECS
 export class ECS<T> {
@@ -27,6 +30,16 @@ export class ECS<T> {
 
   public removeEntity(entity: Entity): void {
     this.entitiesToDestroy.push(entity);
+  }
+
+  loadEntity(components: EntityDefinition<T>) {
+    const newEntity = this.addEntity();
+
+    for (const key in components) {
+      this.addComponent(newEntity, key, components[key]!);
+    }
+
+    return newEntity;
   }
 
   // Components

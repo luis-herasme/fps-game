@@ -1,6 +1,6 @@
+import { Components } from "../../components";
+import { ECS, Entity, RC, System } from "../../lib/ecs";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { Entity } from "../../lib/ecs";
-import { gameManager } from "../../manager";
 import { physicsWorld } from "./physics-world";
 
 type Collisions = {
@@ -9,16 +9,19 @@ type Collisions = {
   started: boolean;
 };
 
-export const physicsSystem = gameManager.ecs.createSystem({
-  requiredComponents: ["Transform", "Collider"],
-  eventQueue: new RAPIER.EventQueue(true),
-  handleMap: new Map<number, Entity>(),
-  collisions: [] as Collisions[],
-  onEntityAdded(entity, ecs) {
+export class PhysicsSystem implements System<Components> {
+  requiredComponents: RC<Components> = ["Transform", "Collider"];
+
+  private eventQueue = new RAPIER.EventQueue(true);
+  private handleMap = new Map<number, Entity>();
+  private collisions: Collisions[] = [];
+
+  onEntityAdded(entity: Entity, ecs: ECS<Components>) {
     const collider = ecs.getComponent("Collider", entity)!;
     this.handleMap.set(collider.handle, entity);
-  },
-  onEntityRemoved(entity, ecs) {
+  }
+
+  onEntityRemoved(entity: Entity, ecs: ECS<Components>) {
     const collider = ecs.getComponent("Collider", entity)!;
 
     physicsWorld.removeCollider(collider, false);
@@ -30,8 +33,9 @@ export const physicsSystem = gameManager.ecs.createSystem({
     }
 
     this.handleMap.delete(collider.handle);
-  },
-  update(entities, ecs) {
+  }
+
+  update(entities: Set<Entity>, ecs: ECS<Components>) {
     physicsWorld.step(this.eventQueue);
 
     this.collisions = [];
@@ -48,5 +52,5 @@ export const physicsSystem = gameManager.ecs.createSystem({
       transform.position.copy(collider.translation());
       transform.rotation.copy(collider.rotation());
     });
-  },
-});
+  }
+}

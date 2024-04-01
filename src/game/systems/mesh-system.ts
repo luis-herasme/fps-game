@@ -1,17 +1,21 @@
-import { gameManager } from "../manager";
+import { Components } from "../components";
+import { ECS, Entity, RC, System } from "../lib/ecs";
 import { renderManager } from "../core/render-manager";
 
-export const meshSystem = gameManager.ecs.createSystem({
-  requiredComponents: ["Mesh", "Transform"],
-  onEntityAdded(entity, ecs) {
+export class MeshSystem implements System<Components> {
+  requiredComponents: RC<Components> = ["Mesh", "Transform"];
+
+  onEntityAdded(entity: Entity, ecs: ECS<Components>) {
     const mesh = ecs.getComponent("Mesh", entity)!;
     renderManager.scene.add(mesh);
-  },
-  onEntityRemoved(entity, ecs) {
+  }
+
+  onEntityRemoved(entity: Entity, ecs: ECS<Components>) {
     const mesh = ecs.getComponent("Mesh", entity)!;
     renderManager.scene.remove(mesh);
-  },
-  update(entities, ecs) {
+  }
+
+  update(entities: Set<Entity>, ecs: ECS<Components>) {
     entities.forEach((entity) => {
       const transform = ecs.getComponent("Transform", entity)!;
       const mesh = ecs.getComponent("Mesh", entity)!;
@@ -19,5 +23,5 @@ export const meshSystem = gameManager.ecs.createSystem({
       mesh.quaternion.copy(transform.rotation);
       mesh.scale.copy(transform.scale);
     });
-  },
-});
+  }
+}

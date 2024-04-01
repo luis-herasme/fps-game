@@ -1,17 +1,21 @@
-import { gameManager } from "../manager";
+import { Components } from "../components";
+import { ECS, Entity, RC, System } from "../lib/ecs";
 import { renderManager } from "../core/render-manager";
 
-export const spriteSystem = gameManager.ecs.createSystem({
-  requiredComponents: ["Sprite", "Transform"],
-  onEntityAdded(entity, ecs) {
+export class SpriteSystem implements System<Components> {
+  requiredComponents: RC<Components> = ["Sprite", "Transform"];
+
+  onEntityAdded(entity: Entity, ecs: ECS<Components>) {
     const sprite = ecs.getComponent("Sprite", entity)!;
     renderManager.scene.add(sprite);
-  },
-  onEntityRemoved(entity, ecs) {
+  }
+
+  onEntityRemoved(entity: Entity, ecs: ECS<Components>) {
     const sprite = ecs.getComponent("Sprite", entity)!;
     renderManager.scene.remove(sprite);
-  },
-  update(entities, ecs) {
+  }
+
+  update(entities: Set<Entity>, ecs: ECS<Components>) {
     entities.forEach((entity) => {
       const transform = ecs.getComponent("Transform", entity)!;
       const sprite = ecs.getComponent("Sprite", entity)!;
@@ -19,5 +23,5 @@ export const spriteSystem = gameManager.ecs.createSystem({
       sprite.quaternion.copy(transform.rotation);
       sprite.scale.copy(transform.scale);
     });
-  },
-});
+  }
+}

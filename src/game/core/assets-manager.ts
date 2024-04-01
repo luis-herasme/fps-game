@@ -58,7 +58,7 @@ class AssetsManager {
     return model;
   }
 
-  private async loadTexture(path: string): Promise<THREE.Texture> {
+  async loadTexture(path: string): Promise<THREE.Texture> {
     if (this.textures.has(path)) {
       return this.textures.get(path)!;
     }
@@ -71,7 +71,7 @@ class AssetsManager {
     return texture;
   }
 
-  private async loadGLTF(url: string): Promise<GLTF> {
+  async loadGLTF(url: string): Promise<GLTF> {
     const model = await this.GLTFLoader.loadAsync(url);
     this.GLTFModels.set(url, model);
     return model;

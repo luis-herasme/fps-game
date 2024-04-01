@@ -1,15 +1,21 @@
-import { Entity } from "../lib/ecs";
-import { gameManager } from "../manager";
+import { Components } from "../components";
+import { ECS, Entity, RC, System } from "../lib/ecs";
 
-export const aliasSystem = gameManager.ecs.createSystem({
-  entitiesByAlias: new Map<string, Entity>(),
-  requiredComponents: ["Alias"],
-  onEntityAdded(entity) {
-    const alias = gameManager.ecs.getComponent("Alias", entity)!;
+export class AliasSystem implements System<Components> {
+  requiredComponents: RC<Components> = ["Alias"];
+  private entitiesByAlias = new Map<string, Entity>();
+
+  onEntityAdded(entity: Entity, ecs: ECS<Components>) {
+    const alias = ecs.getComponent("Alias", entity)!;
     this.entitiesByAlias.set(alias, entity);
-  },
-  onEntityRemoved(entity) {
-    const alias = gameManager.ecs.getComponent("Alias", entity)!;
+  }
+
+  onEntityRemoved(entity: Entity, ecs: ECS<Components>) {
+    const alias = ecs.getComponent("Alias", entity)!;
     this.entitiesByAlias.delete(alias);
-  },
-});
+  }
+
+  getEntityByAlias(alias: string): Entity | undefined {
+    return this.entitiesByAlias.get(alias);
+  }
+}

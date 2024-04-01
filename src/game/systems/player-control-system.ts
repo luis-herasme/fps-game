@@ -1,15 +1,19 @@
+import { Components } from "../components";
+import { Entity, ECS, System, RC } from "../lib/ecs";
 import { input } from "../core/input";
 import { Quaternion, Vector3 } from "three";
-import { Components } from "../components";
-import { Entity, ECS } from "../lib/ecs";
-import { gameManager } from "../manager";
 import { physicsWorld } from "./physics/physics-world";
 
 const characterController = physicsWorld.createCharacterController(0);
 
-export const playerControlSystem = gameManager.ecs.createSystem({
-  requiredComponents: ["Transform", "PlayerControl", "Collider"],
-  updatePosition(entity: Entity, ecs: ECS<Components>, delta: number) {
+export class PlayerControlSystem implements System<Components> {
+  requiredComponents: RC<Components> = [
+    "Transform",
+    "PlayerControl",
+    "Collider",
+  ];
+
+  private updatePosition(entity: Entity, ecs: ECS<Components>, delta: number) {
     const collider = ecs.getComponent("Collider", entity)!;
     const playerControl = ecs.getComponent("PlayerControl", entity)!;
 
@@ -64,10 +68,11 @@ export const playerControlSystem = gameManager.ecs.createSystem({
       y: translation.y + correctedMovement.y,
       z: translation.z + correctedMovement.z,
     });
-  },
-  update(entities, ecs) {
+  }
+
+  update(entities: Set<Entity>, ecs: ECS<Components>) {
     for (const entity of entities) {
       this.updatePosition(entity, ecs, ecs.deltaTime);
     }
-  },
-});
+  }
+}
