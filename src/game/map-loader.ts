@@ -26,48 +26,33 @@ export class MapLoader {
     gltf.scene.traverse((child) => {
       if (child instanceof THREE.Mesh && child.userData.collider) {
         // Getting world position, rotation, and scale
-        const position = child.getWorldPosition(new THREE.Vector3());
-        const rotation = child.getWorldQuaternion(new THREE.Quaternion());
-        const scale = child.getWorldScale(new THREE.Vector3());
+        const geometry = child.geometry.clone();
+        geometry.applyMatrix4(child.matrix);
+        geometry.computeVertexNormals();
 
-        // Computing size based on the bounding box
-        const boundingBox = new THREE.Box3().setFromObject(child);
-        const size = new THREE.Vector3();
-        boundingBox.getSize(size);
+        const vertices = new Float32Array(geometry.attributes.position.array);
+        const indices = new Uint32Array(geometry.index.array);
 
-        const offset = child.geometry.boundingBox.getCenter(
-          new THREE.Vector3()
-        );
-
-        // Creating a mesh with the geometry and a basic yellow wireframe material
-        const mesh = new THREE.Mesh(
-          new THREE.BoxGeometry(size.x, size.y, size.z),
-          new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true })
+        const colliderDescription = RAPIER.ColliderDesc.trimesh(
+          vertices,
+          indices
         );
 
         // Loading the entity with the new mesh and its world transformation
         entities.push({
-          Mesh: mesh,
+          Mesh: new THREE.Mesh(
+            child.geometry.clone().applyMatrix4(child.matrix),
+            new THREE.MeshBasicMaterial({
+              color: 0x00ff00,
+              wireframe: true,
+            })
+          ),
           Transform: {
-            position: new THREE.Vector3(
-              position.x + offset.x * scale.x,
-              position.y + offset.y * scale.y,
-              position.z + offset.z * scale.z
-            ),
-            rotation: rotation,
+            position: new THREE.Vector3(),
+            rotation: new THREE.Quaternion(),
             scale: new THREE.Vector3(1, 1, 1),
           },
-          Collider: physicsWorld.createCollider(
-            RAPIER.ColliderDesc.cuboid(
-              size.x / 2,
-              size.y / 2,
-              size.z / 2
-            ).setTranslation(
-              position.x + offset.x * scale.x,
-              position.y + offset.y * scale.y,
-              position.z + offset.z * scale.z
-            )
-          ),
+          Collider: physicsWorld.createCollider(colliderDescription),
         });
       }
     });

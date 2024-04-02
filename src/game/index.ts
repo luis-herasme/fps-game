@@ -31,19 +31,23 @@ export async function main() {
 
   // Add offset to the sprite
   sprite.geometry.translate(0, -0.435, 0);
+  sprite.geometry.scale(0.5, 0.5, 0.5);
 
   const player = ecs.loadEntity({
     Mesh: new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.CapsuleGeometry(5, 15),
       new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true })
     ),
     Transform: {
-      position: new THREE.Vector3(4, 4, 0),
+      position: new THREE.Vector3(0, 0, 0),
       rotation: new THREE.Quaternion(),
-      scale: new THREE.Vector3(0.5, 0.5, 0.5),
+      scale: new THREE.Vector3(1, 1, 1),
     },
     Collider: physicsWorld.createCollider(
-      RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5).setTranslation(4, 4, 0)
+      RAPIER.ColliderDesc.capsule(7.5, 4).setTranslation(4, 7.5, 0),
+      physicsWorld.createRigidBody(
+        RAPIER.RigidBodyDesc.dynamic().setTranslation(4, 4, 0).lockRotations()
+      )
     ),
     PlayerControl: {
       keys: {
@@ -144,7 +148,7 @@ export async function main() {
   });
 
   const firstPersonCamera = new FirstPersonCameraControl(renderManager.camera, {
-    distance: 5,
+    distance: 1,
   });
 
   firstPersonCamera.follow(player);

@@ -61,13 +61,28 @@ export class PlayerControlSystem implements System<Components> {
 
     characterController.computeColliderMovement(collider, deltaPosition);
     const correctedMovement = characterController.computedMovement();
-    const translation = collider.translation();
 
-    collider.setTranslation({
-      x: translation.x + correctedMovement.x,
-      y: translation.y + correctedMovement.y,
-      z: translation.z + correctedMovement.z,
-    });
+    const rigidBody = collider.parent();
+
+    if (rigidBody) {
+      const translation = rigidBody.translation();
+      rigidBody.setTranslation(
+        {
+          x: translation.x + correctedMovement.x,
+          y: translation.y + correctedMovement.y,
+          z: translation.z + correctedMovement.z,
+        },
+        true
+      );
+    } else {
+      const translation = collider.translation();
+
+      collider.setTranslation({
+        x: translation.x + correctedMovement.x,
+        y: translation.y + correctedMovement.y,
+        z: translation.z + correctedMovement.z,
+      });
+    }
   }
 
   update(entities: Set<Entity>, ecs: ECS<Components>) {
