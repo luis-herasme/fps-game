@@ -7,13 +7,17 @@ import { SpriteSystem } from "./systems/sprite-system";
 import { PhysicsSystem } from "./systems/physics/physics-system";
 import { PlayerControlSystem } from "./systems/player-control-system";
 import { ECS } from "./lib/ecs";
+import { ShootSystem } from "./systems/shoot-system";
+import { SpriteAnimation } from "./systems/sprite-animation";
 
 export const ecs = new ECS<Components>();
 export const gameManager = new GameManager();
 
 ecs.addSystem(new MeshSystem());
 ecs.addSystem(new SpriteSystem());
+ecs.addSystem(new SpriteAnimation());
 ecs.addSystem(new PlayerControlSystem());
 ecs.addSystem(new LightSystem());
 ecs.addSystem(new AliasSystem());
 ecs.addSystem(new PhysicsSystem());
+ecs.addSystem(new ShootSystem());

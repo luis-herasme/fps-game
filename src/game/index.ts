@@ -1,7 +1,5 @@
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
-import { input } from "./core/input";
-import { delay } from "./utils/delay";
 import { ecs, gameManager } from "./manager";
 import { renderManager } from "./core/render-manager";
 import { FirstPersonCameraControl } from "./first-person-camera";
@@ -10,7 +8,8 @@ import { AudioManager } from "./core/audio-manage";
 import { physicsWorld } from "./systems/physics/physics-world";
 import { ANIMATIONS, audios } from "./constants";
 import { MapLoader } from "./map-loader";
-const audioManager = new AudioManager(audios);
+import { input } from "./core/input";
+export const audioManager = new AudioManager(audios);
 
 export async function main() {
   await audioManager.load();
@@ -29,7 +28,6 @@ export async function main() {
     })
   );
 
-  // Add offset to the sprite
   sprite.geometry.translate(0, -0.435, 0);
   sprite.geometry.scale(0.5, 0.5, 0.5);
 
@@ -58,67 +56,22 @@ export async function main() {
       },
       speed: -0.03,
     },
-    Sprite: sprite,
+    SpriteAnimation: {
+      frames: ANIMATIONS.gun1,
+      frameDuration: 100,
+      defaultFrame: "gun1/1.png",
+      active: false,
+      shouldBeActive: false,
+      sprite,
+    },
+    Shoot: {
+      audio: "shot.mp3",
+      shooting: false,
+      shouldShoot: false,
+      duration: 500,
+      bulletSeparation: 2,
+    },
   });
-
-  let shooting = false;
-
-  setInterval(async () => {
-    if (input.mouseDown && !shooting) {
-      const sprite = ecs.getComponent("Sprite", player)!;
-      shooting = true;
-
-      audioManager.play("shot.mp3");
-      const transform = ecs.getComponent("Transform", player)!;
-
-      const direction = new THREE.Vector3(0, 0, -1);
-      direction.applyQuaternion(transform.rotation);
-      const offset = direction.clone().multiplyScalar(2);
-
-      const ballPosition = transform.position.clone().add(offset);
-
-      const rigidBody = physicsWorld.createRigidBody(
-        RAPIER.RigidBodyDesc.dynamic().setTranslation(
-          ballPosition.x,
-          ballPosition.y,
-          ballPosition.z
-        )
-      );
-
-      ecs.loadEntity({
-        Mesh: new THREE.Mesh(
-          new THREE.SphereGeometry(1, 6, 6),
-          new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true })
-        ),
-        Transform: {
-          position: ballPosition.clone(),
-          rotation: transform.rotation.clone(),
-          scale: new THREE.Vector3(1, 1, 1),
-        },
-        Collider: physicsWorld.createCollider(
-          RAPIER.ColliderDesc.ball(1),
-          rigidBody
-        ),
-      });
-
-      rigidBody.applyImpulse(
-        new RAPIER.Vector3(
-          direction.x * 300,
-          direction.y * 300,
-          direction.z * 300
-        ),
-        true
-      );
-
-      for (let i = 2; i <= 4; i++) {
-        sprite.material.map = assetsManager.getTexture(`gun1/${i}.png`);
-        await delay(100);
-      }
-
-      sprite.material.map = assetsManager.getTexture(`gun1/1.png`);
-      shooting = false;
-    }
-  }, 20);
 
   ecs.loadEntity({
     Mesh: new THREE.Mesh(
@@ -156,5 +109,10 @@ export async function main() {
   gameManager.start(() => {
     firstPersonCamera.update(ecs.deltaTime, ecs);
     ecs.update();
+
+    if (input.mouseDown && !ecs.getComponent("Shoot", player)!.shooting) {
+      ecs.getComponent("Shoot", player)!.shouldShoot = true;
+      ecs.getComponent("SpriteAnimation", player)!.shouldBeActive = true;
+    }
   });
 }

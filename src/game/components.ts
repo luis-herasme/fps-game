@@ -21,4 +21,19 @@ export type Components = {
   AmbientLight: THREE.AmbientLight;
   Alias: string;
   Collider: RAPIER.Collider;
+  Shoot: {
+    audio: string;
+    shooting: boolean;
+    shouldShoot: boolean;
+    duration: number;
+    bulletSeparation: number;
+  };
+  SpriteAnimation: {
+    frames: string[];
+    frameDuration: number;
+    defaultFrame: string;
+    active: boolean;
+    shouldBeActive: boolean;
+    sprite: THREE.Sprite;
+  };
 };
