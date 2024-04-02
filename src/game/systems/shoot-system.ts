@@ -54,6 +54,23 @@ export class ShootSystem implements System<Components> {
     );
   }
 
+  private timeouts: Map<Entity, number> = new Map();
+
+  private stopAfterDuration(entity: Entity, ecs: ECS<Components>) {
+    const shoot = ecs.getComponent("Shoot", entity)!;
+    const currentTimeout = this.timeouts.get(entity);
+
+    if (currentTimeout) {
+      clearTimeout(currentTimeout);
+    }
+
+    const newTimeout = setTimeout(() => {
+      shoot.shooting = false;
+    }, shoot.duration);
+
+    this.timeouts.set(entity, newTimeout);
+  }
+
   update(entities: Set<Entity>, ecs: ECS<Components>) {
     for (const entity of entities) {
       const attack = ecs.getComponent("Shoot", entity)!;
@@ -64,11 +81,7 @@ export class ShootSystem implements System<Components> {
 
         audioManager.play(attack.audio);
         this.createBall(entity, ecs);
-
-        // TODO: Implement a better way to handle this
-        setTimeout(() => {
-          attack.shooting = false;
-        }, attack.duration);
+        this.stopAfterDuration(entity, ecs);
       }
     }
   }

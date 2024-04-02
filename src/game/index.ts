@@ -9,6 +9,7 @@ import { physicsWorld } from "./systems/physics/physics-world";
 import { ANIMATIONS, audios } from "./constants";
 import { MapLoader } from "./map-loader";
 import { input } from "./core/input";
+
 export const audioManager = new AudioManager(audios);
 
 export async function main() {
@@ -22,14 +23,11 @@ export async function main() {
 
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({
-      transparent: true,
-      alphaTest: 0.5,
       map: assetsManager.getTexture("gun1/1.png"),
     })
   );
 
-  sprite.geometry.translate(0, -0.435, 0);
-  sprite.geometry.scale(0.5, 0.5, 0.5);
+  sprite.geometry.translate(0, -0.435, 0).scale(0.5, 0.5, 0.5);
 
   const player = ecs.loadEntity({
     Mesh: new THREE.Mesh(
